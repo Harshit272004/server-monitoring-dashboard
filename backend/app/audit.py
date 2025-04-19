@@ -1,33 +1,44 @@
-from app.models import AuditLog
-from app.database import get_db
-from fastapi import Request
-from sqlalchemy.orm import Session
-import jwt
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import os
-from datetime import datetime
+from dotenv import load_dotenv
+from .models import Base, AuditLog
 
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+load_dotenv()
 
-async def create_audit_log(request: Request):
-    db: Session = next(get_db())
-    auth_header = request.headers.get("authorization")
-    user = "Anonymous"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-        try:
-            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-            user = payload.get("sub", "Unknown")
-        except Exception:
-            pass
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    audit = AuditLog(
-        user=user,
-        action=request.method,
-        endpoint=request.url.path,
-        timestamp=datetime.utcnow()
-    )
+# ✅ Automatically create tables (like audit_logs) on startup
+Base.metadata.create_all(bind=engine)
 
-    db.add(audit)
-    db.commit()
+app = FastAPI(
+    title="Server Monitoring Dashboard",
+    description="A secure server monitoring app built with FastAPI",
+    version="1.0"
+)
+
+# CORS setup (for React frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all for dev, restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Middleware to create audit log
+@app.middleware("http")
+async def audit_log_middleware(request: Request, call_next):
+    from .audit import create_audit_log
+    response = await call_next(request)
+    await create_audit_log(request)
+    return response
+
+@app.get("/")
+def read_root():
+    return {"message": "Server Monitoring App is Running!"}
