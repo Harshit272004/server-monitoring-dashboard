@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000", // replace with backend URL after hosting
+  baseURL: "https://monitoring-backend-siuy.onrender.com", // replace with backend URL after hosting
 });
 
 // Attach token to headers
