@@ -1,11 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi.middleware import SlowAPIMiddleware
-from slowapi import Limiter
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
+from .models import Base, AuditLog
 
-from app.routes import alerts, metrics, servers
-from app.auth import auth_router
-from app.audit import create_audit_log
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# ✅ Automatically create tables (like audit_logs) on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Server Monitoring Dashboard",
@@ -13,29 +22,23 @@ app = FastAPI(
     version="1.0"
 )
 
-# Rate limiter setup
-limiter = Limiter(key_func=lambda request: request.client.host)
-app.state.limiter = limiter
-app.add_middleware(SlowAPIMiddleware)
-
-# Enable CORS (frontend will run on a different port)
+# CORS setup (for React frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict this in production
+    allow_origins=["*"],  # Allow all for dev, restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Middleware: Audit logging
+# Middleware to create audit log
 @app.middleware("http")
-async def audit_log_middleware(request, call_next):
+async def audit_log_middleware(request: Request, call_next):
+    from .audit import create_audit_log
     response = await call_next(request)
     await create_audit_log(request)
     return response
 
-# Register all routes
-app.include_router(auth_router, prefix="/auth")
-app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts"])
-app.include_router(metrics.router, prefix="/api/metrics", tags=["Metrics"])
-app.include_router(servers.router, prefix="/api/servers", tags=["Servers"])
+@app.get("/")
+def read_root():
+    return {"message": "Server Monitoring App is Running!"}
