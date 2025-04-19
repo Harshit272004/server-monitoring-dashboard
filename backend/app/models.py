@@ -57,11 +57,20 @@ class NetworkTraffic(Base):
 
     server = relationship("Server", back_populates="traffic")
 
-# AUDIT LOG TABLE
+# models.py
+
+from sqlalchemy import Column, Integer, String, TIMESTAMP
+from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
+
+Base = declarative_base()
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
+
     id = Column(Integer, primary_key=True, index=True)
     user = Column(String)
     action = Column(String)
     endpoint = Column(String)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    timestamp = Column(TIMESTAMP, default=datetime.utcnow)
+
