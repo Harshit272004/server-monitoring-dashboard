@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://monitoring-backend-siuy.onrender.com", // replace with backend URL after hosting
+  baseURL: "postgresql://postgres:qWyvHgCCMZmkPhCesYYrQuoxNaMaGkhe@mainline.proxy.rlwy.net:31562/railway", // replace with backend URL after hosting
 });
 
 // Attach token to headers
