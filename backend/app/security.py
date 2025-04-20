@@ -17,7 +17,7 @@ def hash_password(password: str):
 
 # Verify password
 def verify_password(plain_password: str, hashed_password: str):
-    return pwd_context.verify(plain_password, hashed_password)
+    return pwd_context.verify(plain_password, plain_password)
 
 # Create JWT token
 def create_access_token(data: dict, expires_delta: timedelta = None):
