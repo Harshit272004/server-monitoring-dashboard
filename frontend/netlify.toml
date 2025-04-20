@@ -1,6 +1,7 @@
 [build]
-  publish = "build"
+  base = "."
   command = "npm run build"
+  publish = "dist"  # ✅ change from build to dist
 
 [[redirects]]
   from = "/*"
