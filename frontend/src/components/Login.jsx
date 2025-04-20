@@ -40,60 +40,36 @@ const Login = () => {
 export default Login;*/
 
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import api from "../api";
 import { login } from "../auth";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [form, setForm] = useState({ username: "", password: "" });
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Check if in development mode
-    const devMode = process.env.REACT_APP_ENV_MODE === "development";
-
-    if (devMode) {
-      // Skip login and simulate successful login in dev mode
-      const response = {
-        data: {
-          access_token: "fake_token_for_dev_mode", // Fake token
-          token_type: "bearer",
-          role: "user"
-        }
-      };
-      login(response.data.access_token); // Store fake token
-      navigate("/"); // Redirect to home
-    } else {
+  useEffect(() => {
+    const loginUser = async () => {
       try {
-        const res = await api.post("/auth/login", new URLSearchParams(form)); // Normal login in prod mode
-        login(res.data.access_token);
-        navigate("/");
+        // Call the /login endpoint
+        const res = await api.post("/auth/login");
+        login(res.data.access_token); // Store the token in local storage or context
+        navigate("/"); // Redirect to the main page
       } catch (err) {
-        setError("Invalid credentials");
+        console.error("Login failed", err);
       }
-    }
-  };
+    };
+
+    loginUser(); // Automatically log in the user when the page is loaded
+  }, [navigate]);
 
   return (
     <div style={{ padding: "50px", maxWidth: "400px", margin: "auto" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="username" placeholder="Username" onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
-        <button type="submit">Login</button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
+      <h2>Logging in...</h2> {/* Display a loading message */}
     </div>
   );
 };
 
 export default Login;
+
 
