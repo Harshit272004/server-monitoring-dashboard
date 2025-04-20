@@ -6,7 +6,7 @@ export const login = (token) => {
 };
 
 // Function to check if the user is logged in (by checking the presence of the token in local storage)
-export const isLoggedIn = () => {
+export const isAuthenticated = () => {
   return localStorage.getItem("access_token") !== null; // Check if token exists in local storage
 };
 
