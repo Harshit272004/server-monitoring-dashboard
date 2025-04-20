@@ -9,8 +9,7 @@ The app allows users to authenticate and view real-time system metrics, network 
 ## 🔗 Hosted Links
 
 - **Frontend (React + Netlify):** [peppy-kheer-3778b4.netlify.app](https://peppy-kheer-3778b4.netlify.app)
-- **Backend (FastAPI + Render):** *[Your Render URL here]*
-
+- **Backend (FastAPI + Render):** [https://monitoring-backend-siuy.onrender.com](https://monitoring-backend-siuy.onrender.com)
 ---
 
 ## ✅ Features
