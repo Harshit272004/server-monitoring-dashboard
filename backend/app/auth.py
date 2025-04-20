@@ -16,7 +16,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         token = create_access_token({"sub": "guest", "role": "user"})
         return {"access_token": token, "token_type": "bearer", "role": "user"}
 
-    # Otherwise, continue with normal authentication process (in production or other environments)
+    # Normal authentication process (will happen in production mode)
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
 
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -28,4 +28,3 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
     token = create_access_token({"sub": user.username, "role": user.role})
     return {"access_token": token, "token_type": "bearer", "role": user.role}
-
