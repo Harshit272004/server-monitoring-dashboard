@@ -39,22 +39,21 @@ const Login = () => {
 
 export default Login;*/
 import React, { useState, useEffect } from "react";
-import api from "../api";
-import { login } from "../auth";
+import { login } from "../auth"; // Assuming the login function is in auth.js
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Login = () => {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Check if we are in development mode
   useEffect(() => {
+    // Check if in development mode to bypass login
     if (process.env.REACT_APP_ENV_MODE === "development") {
-      // Simulate login by setting a fake token
-      const fakeToken = "sample-hardcoded-token"; 
-      login(fakeToken); 
-      navigate("/"); // Redirect to home or any other page
+      const fakeToken = "sample-hardcoded-token";  // Fake token for dev mode
+      login(fakeToken);  // Automatically log in
+      navigate("/");  // Redirect to the home page or the page you want
     }
   }, [navigate]);
 
@@ -66,9 +65,10 @@ const Login = () => {
     e.preventDefault();
     if (process.env.REACT_APP_ENV_MODE !== "development") {
       try {
-        const res = await api.post("/auth/login", new URLSearchParams(form));
+        const apiUrl = import.meta.env.VITE_API_BASE_URL;
+        const res = await axios.post(`${apiUrl}/auth/login`, new URLSearchParams(form));
         login(res.data.access_token);
-        navigate("/");
+        navigate("/");  // Redirect to the home page or the page you want
       } catch (err) {
         setError("Invalid credentials");
       }
@@ -100,4 +100,3 @@ const Login = () => {
 };
 
 export default Login;
-
